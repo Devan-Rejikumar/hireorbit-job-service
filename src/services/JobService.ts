@@ -27,7 +27,7 @@ export class JobService implements IJobService {
     return this.jobRepository.searchJobs(filters);
   }
 
-  async applyForJob(userId: string, jobId: string): Promise<JobApplication> {
+  async applyForJobs(userId: string, jobId: string): Promise<JobApplication> {
    
     const job = await this.jobRepository.getJobById(jobId);
     if (!job) {

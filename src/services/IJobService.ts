@@ -9,7 +9,7 @@ export interface IJobService {
   searchJobs(filters: JobSearchFilters): Promise<Job[]>;
   
   
-  applyForJob(userId: string, jobId: string): Promise<JobApplication>;
+  applyForJobs(userId: string, jobId: string): Promise<JobApplication>;
   getJobApplications(jobId: string): Promise<JobApplication[]>;
   getJobSuggestions(query: string, limit?: number): Promise<string[]>;
 }
