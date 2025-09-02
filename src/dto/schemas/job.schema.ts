@@ -25,7 +25,6 @@ export const PaginationSchema = z.object({
 });
 
 export const JobApplicationSchema = z.object({
-  jobId: z.string().uuid('Invalid job ID'),
   userId: z.string().uuid('Invalid user ID')
 });
 

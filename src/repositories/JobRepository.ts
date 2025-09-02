@@ -66,14 +66,14 @@ export class JobRepository implements IJobRepository {
     });
   }
 
-  async applyForJob(userId: string, jobId: string): Promise<JobApplication> {
-    return prisma.jobApplication.create({
-      data: {
-        userId,
-        jobId,
-        status: "pending",
-      },
+  async applyForJob(userId: string, jobId: string): Promise<JobApplication>{
+    const existingApplication = await prisma.jobApplication.findUnique({
+      where:{userId_jobId:{userId,jobId}}
     });
+    if(existingApplication){
+      throw new Error('You have already applied for this job')
+    }
+    return prisma.jobApplication.create({data:{userId,jobId,status:'pending',}})
   }
 
   async getJobApplications(jobId: string): Promise<JobApplication[]> {
@@ -99,4 +99,14 @@ export class JobRepository implements IJobRepository {
 
     return jobs.map((job) => job.title);
   }
+
+  async countByCompany(companyId: string): Promise<number> {
+    console.log('🔍 JobRepository: countByCompany called with companyId =', companyId);
+    const count = await prisma.job.count({
+      where: { company: companyId, isActive: true }
+    });
+    console.log('🔍 JobRepository: count =', count);
+    return count;
+  }
+
 }

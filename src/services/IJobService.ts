@@ -7,9 +7,8 @@ export interface IJobService {
   getJobById(jobId: string): Promise<Job | null>;
   getAllJobs(): Promise<Job[]>;
   searchJobs(filters: JobSearchFilters): Promise<Job[]>;
-  
-  
-  applyForJobs(userId: string, jobId: string): Promise<JobApplication>;
+  applyForJobs(jobId: string, userId: string): Promise<JobApplication>;
   getJobApplications(jobId: string): Promise<JobApplication[]>;
   getJobSuggestions(query: string, limit?: number): Promise<string[]>;
+  getJobCountByCompany(companyId: string): Promise<number>;
 }

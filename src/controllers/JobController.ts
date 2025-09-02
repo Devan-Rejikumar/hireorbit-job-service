@@ -8,7 +8,9 @@ import { buildErrorResponse, buildSuccessResponse } from "shared-dto";
 
 @injectable()
 export class JobController {
-  constructor(@inject(TYPES.IJobService) private jobService: IJobService) {}
+  constructor(@inject(TYPES.IJobService) private jobService: IJobService) {
+    console.log('🔍 JobController: Constructor called');
+  }
 
   async createJob(req: Request, res: Response): Promise<void> {
     try {
@@ -102,31 +104,44 @@ async getAllJobs(req: Request, res: Response): Promise<void> {
     }
   }
 
-  async applyForJobs(req: Request, res: Response): Promise<void> {
-    try {
-      const validationResult = JobApplicationSchema.safeParse(req.body);
-      
-      if (!validationResult.success) {
-        res.status(ValidationStatusCode.VALIDATION_ERROR).json(
-          buildErrorResponse('Validation failed', validationResult.error.message)
-        );
-        return;
-      }
-      
-      const { jobId, userId } = validationResult.data;
-      
-      const application = await this.jobService.applyForJobs(jobId, userId);
-      
-      res.status(ApplicationStatusCode.APPLICATION_SUCCESS).json(
-        buildSuccessResponse({ application }, 'Job application submitted successfully')
-      );
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(
-        buildErrorResponse('Job application failed', errorMessage)
-      );
-    }
-  }
+   async applyForJobs(req: Request, res: Response): Promise<void> {
+    console.log('🔍 JobController: applyForJobs method called');
+  console.log('�� JobController: req.params:', req.params);
+  console.log('�� JobController: req.body:', req.body);
+     try {
+       const { id: jobId } = req.params;    
+       console.log('🔍 JobController: extracted jobId:', jobId);
+       const validationResult = JobApplicationSchema.safeParse(req.body);  
+       console.log('🔍 JobController: validation result:', validationResult);
+       if (!validationResult.success) {
+         res.status(ValidationStatusCode.VALIDATION_ERROR).json(
+           buildErrorResponse('Validation failed', validationResult.error.message)
+         );
+         return;
+       }
+       const { userId } = validationResult.data;
+       console.log('🔍 JobController: extracted userId:', userId);
+       
+       const application = await this.jobService.applyForJobs(jobId, userId);
+       console.log('🔍 JobController: application created:', application);
+       
+       res.status(ApplicationStatusCode.APPLICATION_SUCCESS).json(
+         buildSuccessResponse({ application }, 'Job application submitted successfully')
+       );
+     } catch (err) {
+       console.error('🔥 JobController: Error in applyForJobs:', err);
+       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+       if (errorMessage.includes('already applied')) {
+         res.status(409).json(
+           buildErrorResponse('Conflict', errorMessage)
+         );
+       } else {
+         res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(
+           buildErrorResponse('Job application failed', errorMessage)
+         );
+       }
+     }
+   }
 
   async getJobApplications(req: Request, res: Response): Promise<void> {
     try {
@@ -172,6 +187,30 @@ async getAllJobs(req: Request, res: Response): Promise<void> {
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(
         buildErrorResponse('Failed to get job suggestions', errorMessage)
       );
+    }
+  }
+
+  async getJobCountByCompany(req: Request, res: Response): Promise<void> {
+    try {
+      console.log('🔍 JobController: getJobCountByCompany called');
+      const { companyId } = req.params;
+      console.log('🔍 JobController: companyId =', companyId);
+      
+      const count = await this.jobService.getJobCountByCompany(companyId);
+      console.log('🔍 JobController: count =', count);
+      
+      res.status(200).json({
+        success: true,
+        data: { count },
+        message: 'Job count retrieved successfully'
+      });
+      console.log('🔍 JobController: Response sent successfully');
+    } catch (err) {
+      console.error('🔥 JobController: Error in getJobCountByCompany:', err);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get job count'
+      });
     }
   }
 }

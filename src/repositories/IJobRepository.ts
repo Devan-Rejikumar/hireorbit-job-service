@@ -12,4 +12,6 @@ export interface IJobRepository {
   applyForJob(userId: string, jobId: string): Promise<JobApplication>;
   getJobApplications(jobId: string): Promise<JobApplication[]>;
   getJobSuggestions(query: string, limit?: number): Promise<string[]>;
+  countByCompany(companyId: string): Promise<number>;
+  
 }

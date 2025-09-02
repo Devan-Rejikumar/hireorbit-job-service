@@ -26,13 +26,19 @@ model Job {
 }
 
 model JobApplication {
-  id        String   @id @default(uuid())
-  userId    String
-  jobId     String
-  status    String   @default("pending")
-  appliedAt DateTime @default(now())
+  id            String   @id @default(uuid())
+  userId        String
+  jobId         String
+  status        String   @default("pending")
+  coverLetter   String   @db.Text
+  expectedSalary String?
+  availability  String?
+  experience    String   // "fresher", "0-1", "1-2", etc.
+  resumeUrl     String?  // Cloudinary URL
+  appliedAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   
-  job       Job      @relation(fields: [jobId], references: [id])
+  job           Job      @relation(fields: [jobId], references: [id])
   
   @@unique([userId, jobId])
 }
