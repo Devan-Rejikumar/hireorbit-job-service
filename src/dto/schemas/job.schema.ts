@@ -25,7 +25,11 @@ export const PaginationSchema = z.object({
 });
 
 export const JobApplicationSchema = z.object({
-  userId: z.string().uuid('Invalid user ID')
+  userId: z.string().uuid('Invalid user ID'),
+  coverLetter: z.string().min(1, 'Cover letter is required'),
+  expectedSalary: z.string().optional(),
+  availability: z.string().min(1, 'Availability is required'),
+  experience: z.string().min(1, 'Experience is required')
 });
 
 export const JobSuggestionsSchema = z.object({

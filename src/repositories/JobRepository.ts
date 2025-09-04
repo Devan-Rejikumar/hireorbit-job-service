@@ -1,10 +1,17 @@
 import { injectable } from "inversify";
-// import { PrismaClient } from "../../generated/prisma";
 import { Job, JobApplication, PrismaClient } from "@prisma/client";
 import { IJobRepository } from "./IJobRepository";
 import { JobSearchFilters } from "../types/job";
 
 const prisma = new PrismaClient();
+
+interface ApplicationData {
+  coverLetter: string;
+  expectedSalary?: string;
+  availability: string;
+  experience: string;
+  resumeUrl?: string;
+}
 
 @injectable()
 export class JobRepository implements IJobRepository {
@@ -66,14 +73,32 @@ export class JobRepository implements IJobRepository {
     });
   }
 
-  async applyForJob(userId: string, jobId: string): Promise<JobApplication>{
+  async applyForJob(userId: string, jobId: string, applicationData: ApplicationData): Promise<JobApplication> {
     const existingApplication = await prisma.jobApplication.findUnique({
-      where:{userId_jobId:{userId,jobId}}
+      where: {
+        userId_jobId: {
+          userId,
+          jobId
+        }
+      }
     });
-    if(existingApplication){
-      throw new Error('You have already applied for this job')
+
+    if (existingApplication) {
+      throw new Error("You have already applied for this job");
     }
-    return prisma.jobApplication.create({data:{userId,jobId,status:'pending',}})
+
+    return prisma.jobApplication.create({
+      data: {
+        userId,
+        jobId,
+        status: "pending",
+        coverLetter: applicationData.coverLetter,
+        expectedSalary: applicationData.expectedSalary || null,
+        availability: applicationData.availability,
+        experience: applicationData.experience,
+        resumeUrl: applicationData.resumeUrl || null,
+      },
+    });
   }
 
   async getJobApplications(jobId: string): Promise<JobApplication[]> {
@@ -101,7 +126,7 @@ export class JobRepository implements IJobRepository {
   }
 
   async countByCompany(companyId: string): Promise<number> {
-    console.log('🔍 JobRepository: countByCompany called with companyId =', companyId);
+    console.log('JobRepository: countByCompany called with companyId =', companyId);
     const count = await prisma.job.count({
       where: { company: companyId, isActive: true }
     });
@@ -109,4 +134,18 @@ export class JobRepository implements IJobRepository {
     return count;
   }
 
+  async checkUserApplication(jobId: string, userId: string): Promise<boolean> {
+    console.log('JobRepository: checkUserApplication called with jobId =', jobId, 'userId =', userId);
+    const application = await prisma.jobApplication.findUnique({
+      where: {
+        userId_jobId: {
+          userId,
+          jobId
+        }
+      }
+    });
+    const hasApplied = !!application;
+    console.log('JobRepository: hasApplied =', hasApplied);
+    return hasApplied;
+  }
 }

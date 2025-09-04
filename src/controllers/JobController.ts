@@ -5,6 +5,7 @@ import { IJobService } from "../services/IJobService";
 import { HttpStatusCode, AuthStatusCode, JobStatusCode, ValidationStatusCode, ApplicationStatusCode } from '../enums/StatusCodes';
 import { CreateJobSchema, JobApplicationSchema, JobSearchSchema, JobSuggestionsSchema } from "../dto/schemas/job.schema";
 import { buildErrorResponse, buildSuccessResponse } from "shared-dto";
+import { upload } from "../config/cloudinary";
 
 @injectable()
 export class JobController {
@@ -104,44 +105,71 @@ async getAllJobs(req: Request, res: Response): Promise<void> {
     }
   }
 
-   async applyForJobs(req: Request, res: Response): Promise<void> {
-    console.log('🔍 JobController: applyForJobs method called');
-  console.log('�� JobController: req.params:', req.params);
-  console.log('�� JobController: req.body:', req.body);
-     try {
-       const { id: jobId } = req.params;    
-       console.log('🔍 JobController: extracted jobId:', jobId);
-       const validationResult = JobApplicationSchema.safeParse(req.body);  
-       console.log('🔍 JobController: validation result:', validationResult);
-       if (!validationResult.success) {
-         res.status(ValidationStatusCode.VALIDATION_ERROR).json(
-           buildErrorResponse('Validation failed', validationResult.error.message)
-         );
-         return;
-       }
-       const { userId } = validationResult.data;
-       console.log('🔍 JobController: extracted userId:', userId);
+  async applyForJobs(req: Request, res: Response): Promise<void> {
+    try {
+      console.log('🔍 JobController: applyForJobs method called');
+
+      upload.single('resume')(req, res, async (err) => {
+        if (err) {
+          console.error('File upload error:', err);
+          console.error('Error details:', {
+            message: err.message,
+            code: err.code,
+            field: err.field
+          });
+          return res.status(400).json(
+            buildErrorResponse('File upload error', err.message)
+          );
+        }
+
+        const { id: jobId } = req.params;
+        const { coverLetter, expectedSalary, availability, experience } = req.body;
+        const userId = req.headers['x-user-id'] as string;
+        
+        console.log('JobController: req.params:', req.params);
+        console.log('JobController: req.body:', req.body);
+        console.log('JobController: req.file:', req.file);
+        
        
-       const application = await this.jobService.applyForJobs(jobId, userId);
-       console.log('🔍 JobController: application created:', application);
-       
-       res.status(ApplicationStatusCode.APPLICATION_SUCCESS).json(
-         buildSuccessResponse({ application }, 'Job application submitted successfully')
-       );
-     } catch (err) {
-       console.error('🔥 JobController: Error in applyForJobs:', err);
-       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-       if (errorMessage.includes('already applied')) {
-         res.status(409).json(
-           buildErrorResponse('Conflict', errorMessage)
-         );
-       } else {
-         res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(
-           buildErrorResponse('Job application failed', errorMessage)
-         );
-       }
-     }
-   }
+        if (!userId || !coverLetter || !experience || !availability) {
+          return res.status(400).json(
+            buildErrorResponse('Validation failed', 'Missing required fields')
+          );
+        }
+
+     
+        const resumeUrl = req.file ? req.file.path : null;
+        console.log('JobController: resumeUrl from Cloudinary:', resumeUrl);
+        
+        try {
+          const application = await this.jobService.applyForJobs(jobId, userId, {
+            coverLetter,
+            expectedSalary,
+            availability,
+            experience,
+            resumeUrl
+          });
+          
+          console.log('🔍 JobController: application created:', application);
+          
+          res.status(ApplicationStatusCode.APPLICATION_SUCCESS).json(
+            buildSuccessResponse({ application }, 'Job application submitted successfully')
+          );
+        } catch (serviceError) {
+          console.error('JobService error:', serviceError);
+          res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(
+            buildErrorResponse('Failed to create application', serviceError instanceof Error ? serviceError.message : 'Unknown error')
+          );
+        }
+      });
+    } catch (err) {
+      console.error('JobController: Error in applyForJobs:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(
+        buildErrorResponse('Job application failed', errorMessage)
+      );
+    }
+  }
 
   async getJobApplications(req: Request, res: Response): Promise<void> {
     try {
@@ -192,25 +220,55 @@ async getAllJobs(req: Request, res: Response): Promise<void> {
 
   async getJobCountByCompany(req: Request, res: Response): Promise<void> {
     try {
-      console.log('🔍 JobController: getJobCountByCompany called');
+      console.log('JobController: getJobCountByCompany called');
       const { companyId } = req.params;
-      console.log('🔍 JobController: companyId =', companyId);
+      console.log('JobController: companyId =', companyId);
       
       const count = await this.jobService.getJobCountByCompany(companyId);
-      console.log('🔍 JobController: count =', count);
+      console.log('JobController: count =', count);
       
       res.status(200).json({
         success: true,
         data: { count },
         message: 'Job count retrieved successfully'
       });
-      console.log('🔍 JobController: Response sent successfully');
+      console.log('JobController: Response sent successfully');
     } catch (err) {
-      console.error('🔥 JobController: Error in getJobCountByCompany:', err);
+      console.error('JobController: Error in getJobCountByCompany:', err);
       res.status(500).json({
         success: false,
         error: 'Failed to get job count'
       });
+    }
+  }
+
+  async checkApplicationStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const { id: jobId } = req.params;
+      const userId = req.headers['x-user-id'] as string;
+      
+      console.log('JobController: checkApplicationStatus called');
+      console.log('JobController: jobId:', jobId);
+      console.log(' JobController: userId:', userId);
+      
+      if (!userId) {
+        res.status(HttpStatusCode.UNAUTHORIZED).json(
+          buildErrorResponse('User not authenticated', 'User ID is required')
+        );
+        return;
+      }
+
+      const hasApplied = await this.jobService.checkUserApplication(jobId, userId);
+      
+      res.status(HttpStatusCode.OK).json(
+        buildSuccessResponse({ hasApplied }, 'Application status retrieved successfully')
+      );
+    } catch (err) {
+      console.error('JobController: Error in checkApplicationStatus:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(
+        buildErrorResponse('Failed to check application status', errorMessage)
+      );
     }
   }
 }

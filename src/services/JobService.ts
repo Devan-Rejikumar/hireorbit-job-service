@@ -5,6 +5,15 @@ import { IJobRepository } from "../repositories/IJobRepository";
 import { JobSearchFilters } from "../types/job";
 import TYPES from "../config/types";
 
+
+interface ApplicationData {
+  coverLetter: string;
+  expectedSalary?: string;
+  availability: string;
+  experience: string;
+  resumeUrl?: string | null;
+}
+
 @injectable()
 export class JobService implements IJobService {
   constructor(
@@ -27,12 +36,13 @@ export class JobService implements IJobService {
     return this.jobRepository.searchJobs(filters);
   }
 
-  async applyForJobs(jobId: string, userId: string): Promise<JobApplication> {
+  async applyForJobs(jobId: string, userId: string, applicationData: ApplicationData): Promise<JobApplication> {
     const job = await this.jobRepository.getJobById(jobId);
     if (!job) {
       throw new Error("Job not found");
     }
-    return this.jobRepository.applyForJob(userId, jobId);
+
+    return this.jobRepository.applyForJob(userId, jobId, applicationData);
   }
 
   async getJobApplications(jobId: string): Promise<JobApplication[]> {
@@ -45,11 +55,16 @@ export class JobService implements IJobService {
   }
 
   async getJobCountByCompany(companyId: string): Promise<number> {
-    console.log('🔍 JobService: getJobCountByCompany called with companyId =', companyId);
+    console.log('JobService: getJobCountByCompany called with companyId =', companyId);
     const count = await this.jobRepository.countByCompany(companyId);
-    console.log('🔍 JobService: count returned =', count);
+    console.log('JobService: count returned =', count);
     return count;
   }
 
-
+  async checkUserApplication(jobId: string, userId: string): Promise<boolean> {
+    console.log('JobService: checkUserApplication called with jobId =', jobId, 'userId =', userId);
+    const hasApplied = await this.jobRepository.checkUserApplication(jobId, userId);
+    console.log('JobService: hasApplied =', hasApplied);
+    return hasApplied;
+  }
 }

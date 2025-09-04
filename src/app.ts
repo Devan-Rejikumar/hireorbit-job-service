@@ -9,9 +9,9 @@ dotenv.config();
 const app = express();
 
 app.use((req, res, next) => {
-  console.log(`�� Job Service: ${req.method} ${req.url}`);
-  console.log(`🔍 Job Service: Headers:`, req.headers);
-  console.log(`�� Job Service: Body:`, req.body);
+  console.log(`Job Service: ${req.method} ${req.url}`);
+  console.log(`Job Service: Headers:`, req.headers);
+  console.log(`Job Service: Body:`, req.body);
   next();
 });
 
