@@ -13,7 +13,7 @@ export interface IJob {
     updatedAt: Date;
   }
   
-  export interface IJobApplication {
+export interface IJobApplication {
     id: string;
     userId: string;
     jobId: string;
@@ -21,7 +21,7 @@ export interface IJob {
     appliedAt: Date;
   }
   
-  export interface JobSearchFilters {
+export interface JobSearchFilters {
     title?: string;
     company?: string;
     location?: string;

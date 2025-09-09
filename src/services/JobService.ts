@@ -1,10 +1,9 @@
-import { injectable, inject } from "inversify";
-import { Job, JobApplication } from "@prisma/client";
-import { IJobService } from "../services/IJobService";
-import { IJobRepository } from "../repositories/IJobRepository";
-import { JobSearchFilters } from "../types/job";
-import TYPES from "../config/types";
-
+import { injectable, inject } from 'inversify';
+import { Job, JobApplication } from '@prisma/client';
+import { IJobService } from '../services/IJobService';
+import { IJobRepository } from '../repositories/IJobRepository';
+import { JobSearchFilters } from '../types/job';
+import TYPES from '../config/types';
 
 interface ApplicationData {
   coverLetter: string;
@@ -17,7 +16,7 @@ interface ApplicationData {
 @injectable()
 export class JobService implements IJobService {
   constructor(
-    @inject(TYPES.IJobRepository) private jobRepository: IJobRepository
+    @inject(TYPES.IJobRepository) private jobRepository: IJobRepository,
   ) { }
 
   async createJob(jobData: Omit<Job, 'id' | 'createdAt' | 'updatedAt'>): Promise<Job> {
@@ -39,7 +38,7 @@ export class JobService implements IJobService {
   async applyForJobs(jobId: string, userId: string, applicationData: ApplicationData): Promise<JobApplication> {
     const job = await this.jobRepository.getJobById(jobId);
     if (!job) {
-      throw new Error("Job not found");
+      throw new Error('Job not found');
     }
 
     return this.jobRepository.applyForJob(userId, jobId, applicationData);
@@ -48,7 +47,6 @@ export class JobService implements IJobService {
   async getJobApplications(jobId: string): Promise<JobApplication[]> {
     return this.jobRepository.getJobApplications(jobId);
   }
-
 
   async getJobSuggestions(query: string, limit?: number): Promise<string[]> {
     return this.jobRepository.getJobSuggestions(query, limit);

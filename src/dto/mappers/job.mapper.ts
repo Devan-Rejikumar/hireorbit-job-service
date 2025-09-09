@@ -24,7 +24,7 @@ export function mapJobToResponse(job: {
     requirements: job.requirements,
     benefits: job.benefits,
     createdAt: job.createdAt,
-    updatedAt: job.updatedAt
+    updatedAt: job.updatedAt,
   };
 }
 
@@ -56,6 +56,6 @@ export function mapJobApplicationToResponse(application: {
     userId: application.userId,
     jobId: application.jobId,
     status: application.status,
-    appliedAt: application.appliedAt
+    appliedAt: application.appliedAt,
   };
 }

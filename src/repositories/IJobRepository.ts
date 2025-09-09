@@ -1,6 +1,6 @@
 
-import { Prisma, PrismaClient, Job, JobApplication } from "@prisma/client";
-import { JobSearchFilters } from "../types/job";
+import { Prisma, PrismaClient, Job, JobApplication } from '@prisma/client';
+import { JobSearchFilters } from '../types/job';
 
 interface ApplicationData {
   coverLetter: string;

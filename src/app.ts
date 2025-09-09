@@ -10,8 +10,8 @@ const app = express();
 
 app.use((req, res, next) => {
   console.log(`Job Service: ${req.method} ${req.url}`);
-  console.log(`Job Service: Headers:`, req.headers);
-  console.log(`Job Service: Body:`, req.body);
+  console.log('Job Service: Headers:', req.headers);
+  console.log('Job Service: Body:', req.body);
   next();
 });
 
@@ -22,16 +22,14 @@ app.use((req, res, next) => {
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173', 
-  credentials: true
+  credentials: true,
 }));
 app.use(express.json());
 app.use(cookieParser());
 
-
 app.get('/health', (req, res) => {
   res.json({ message: 'Job Service is running!' });
 });
-
 
 app.use('/api/jobs', jobRoutes);
 

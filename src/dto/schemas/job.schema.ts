@@ -9,7 +9,7 @@ export const CreateJobSchema = z.object({
   requirements: z.array(z.string()).min(1, 'At least one requirement is needed'),
   salary: z.string().nullable(),
   benefits: z.array(z.string()).optional().default([]),
-  isActive: z.boolean().default(true)
+  isActive: z.boolean().default(true),
 });
 
 export const JobSearchSchema = z.object({
@@ -21,7 +21,7 @@ export const JobSearchSchema = z.object({
 
 export const PaginationSchema = z.object({
   page: z.number().min(1, 'Page must be at least 1').default(1),
-  limit: z.number().min(1, 'Limit must be at least 1').max(100, 'Limit cannot exceed 100').default(10)
+  limit: z.number().min(1, 'Limit must be at least 1').max(100, 'Limit cannot exceed 100').default(10),
 });
 
 export const JobApplicationSchema = z.object({
@@ -29,11 +29,11 @@ export const JobApplicationSchema = z.object({
   coverLetter: z.string().min(1, 'Cover letter is required'),
   expectedSalary: z.string().optional(),
   availability: z.string().min(1, 'Availability is required'),
-  experience: z.string().min(1, 'Experience is required')
+  experience: z.string().min(1, 'Experience is required'),
 });
 
 export const JobSuggestionsSchema = z.object({
-  q: z.string().min(1, 'Query parameter is required')
+  q: z.string().min(1, 'Query parameter is required'),
 });
 
 export type CreateJobInput = z.infer<typeof CreateJobSchema>;

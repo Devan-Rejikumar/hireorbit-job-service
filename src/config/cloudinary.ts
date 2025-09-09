@@ -24,15 +24,15 @@ const storage = new CloudinaryStorage({
     resource_type: 'raw',
     transformation: [
       { quality: 'auto' },
-      { fetch_format: 'auto' }
-    ]
+      { fetch_format: 'auto' },
+    ],
   } as CloudinaryParams,
 });
 
 const fileFilter = (
   req: Request,
   file: Express.Multer.File,
-  cb: FileFilterCallback
+  cb: FileFilterCallback,
 ) => {
   const allowedTypes = [
     'application/pdf',

@@ -1,5 +1,5 @@
-import { Job, JobApplication } from "@prisma/client";
-import { JobSearchFilters } from "../types/job";
+import { Job, JobApplication } from '@prisma/client';
+import { JobSearchFilters } from '../types/job';
 
 interface ApplicationData {
   coverLetter: string;
@@ -8,7 +8,6 @@ interface ApplicationData {
   experience: string;
   resumeUrl?: string | null;
 }
-
 
 export interface IJobService {
  

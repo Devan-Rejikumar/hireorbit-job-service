@@ -1,7 +1,7 @@
-import { injectable } from "inversify";
-import { Job, JobApplication, PrismaClient } from "@prisma/client";
-import { IJobRepository } from "./IJobRepository";
-import { JobSearchFilters } from "../types/job";
+import { injectable } from 'inversify';
+import { Job, JobApplication, PrismaClient } from '@prisma/client';
+import { IJobRepository } from './IJobRepository';
+import { JobSearchFilters } from '../types/job';
 
 const prisma = new PrismaClient();
 
@@ -16,7 +16,7 @@ interface ApplicationData {
 @injectable()
 export class JobRepository implements IJobRepository {
   async createJob(
-    jobData: Omit<Job, "id" | "createdAt" | "updatedAt">
+    jobData: Omit<Job, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<Job> {
     return prisma.job.create({
       data: jobData,
@@ -32,7 +32,7 @@ export class JobRepository implements IJobRepository {
   async getAllJobs(): Promise<Job[]> {
     return prisma.job.findMany({
       where: { isActive: true },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
@@ -49,17 +49,17 @@ export class JobRepository implements IJobRepository {
     };
 
     if (filters.title) {
-      whereClause.title = { contains: filters.title, mode: "insensitive" };
+      whereClause.title = { contains: filters.title, mode: 'insensitive' };
     }
 
     if (filters.company) {
-      whereClause.company = { contains: filters.company, mode: "insensitive" };
+      whereClause.company = { contains: filters.company, mode: 'insensitive' };
     }
 
     if (filters.location) {
       whereClause.location = {
         contains: filters.location,
-        mode: "insensitive",
+        mode: 'insensitive',
       };
     }
 
@@ -69,7 +69,7 @@ export class JobRepository implements IJobRepository {
 
     return prisma.job.findMany({
       where: whereClause,
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
@@ -78,20 +78,20 @@ export class JobRepository implements IJobRepository {
       where: {
         userId_jobId: {
           userId,
-          jobId
-        }
-      }
+          jobId,
+        },
+      },
     });
 
     if (existingApplication) {
-      throw new Error("You have already applied for this job");
+      throw new Error('You have already applied for this job');
     }
 
     return prisma.jobApplication.create({
       data: {
         userId,
         jobId,
-        status: "pending",
+        status: 'pending',
         coverLetter: applicationData.coverLetter,
         expectedSalary: applicationData.expectedSalary || null,
         availability: applicationData.availability,
@@ -109,17 +109,17 @@ export class JobRepository implements IJobRepository {
 
   async getJobSuggestions(
     query: string,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<string[]> {
     const jobs = await prisma.job.findMany({
       where: {
         isActive: true,
-        title: { contains: query, mode: "insensitive" },
+        title: { contains: query, mode: 'insensitive' },
       },
       select: { title: true },
-      distinct: ["title"],
+      distinct: ['title'],
       take: limit,
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
 
     return jobs.map((job) => job.title);
@@ -128,7 +128,7 @@ export class JobRepository implements IJobRepository {
   async countByCompany(companyId: string): Promise<number> {
     console.log('JobRepository: countByCompany called with companyId =', companyId);
     const count = await prisma.job.count({
-      where: { company: companyId, isActive: true }
+      where: { company: companyId, isActive: true },
     });
     console.log('🔍 JobRepository: count =', count);
     return count;
@@ -140,9 +140,9 @@ export class JobRepository implements IJobRepository {
       where: {
         userId_jobId: {
           userId,
-          jobId
-        }
-      }
+          jobId,
+        },
+      },
     });
     const hasApplied = !!application;
     console.log('JobRepository: hasApplied =', hasApplied);
