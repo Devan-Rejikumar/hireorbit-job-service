@@ -1,6 +1,7 @@
 
 import { Prisma, PrismaClient, Job, JobApplication } from '@prisma/client';
 import { JobSearchFilters } from '../types/job';
+import { UpdateJobInput } from '../services/IJobService';
 
 interface ApplicationData {
   coverLetter: string;
@@ -20,4 +21,7 @@ export interface IJobRepository {
   getJobSuggestions(query: string, limit?: number): Promise<string[]>;
   countByCompany(companyId: string): Promise<number>;
   checkUserApplication(jobId: string, userId: string): Promise<boolean>;
+  getJobsByCompany(companyId: string): Promise<Job[]>;
+  updateJob(id: string, jobData: UpdateJobInput): Promise<Job>;
+  deleteJob(id: string): Promise<void>;
 }

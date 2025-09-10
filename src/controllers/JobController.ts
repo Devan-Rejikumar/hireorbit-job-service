@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { injectable, inject } from 'inversify';
 import TYPES from '../config/types';
-import { IJobService } from '../services/IJobService';
+import { IJobService, UpdateJobInput } from '../services/IJobService';
 import { HttpStatusCode, AuthStatusCode, JobStatusCode, ValidationStatusCode, ApplicationStatusCode } from '../enums/StatusCodes';
 import { CreateJobSchema, JobApplicationSchema, JobSearchSchema, JobSuggestionsSchema } from '../dto/schemas/job.schema';
 import { buildErrorResponse, buildSuccessResponse } from 'shared-dto';
@@ -268,4 +268,66 @@ export class JobController {
       );
     }
   }
+async getJobsByCompany(req: Request, res: Response): Promise<void> {
+  try {
+    const { companyId } = req.params;
+    
+    if (!companyId) {
+      res.status(400).json(buildErrorResponse('Company ID is required'));
+      return;
+    }
+    
+    const jobs = await this.jobService.getJobsByCompany(companyId);
+    res.status(200).json(buildSuccessResponse({ jobs }, 'Jobs retrieved successfully'));
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json(buildErrorResponse('Failed to retrieve jobs', errorMessage));
+  }
+}
+
+async updateJob(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    
+    // Simple validation for now
+    const jobData: UpdateJobInput = {
+      title: req.body.title,
+      description: req.body.description,
+      company: req.body.company,
+      location: req.body.location,
+      salary: req.body.salary,
+      jobType: req.body.jobType,
+      requirements: req.body.requirements || [],
+      benefits: req.body.benefits || [],
+    };
+    
+    if (!id) {
+      res.status(400).json(buildErrorResponse('Job ID is required'));
+      return;
+    }
+    
+    const job = await this.jobService.updateJob(id, jobData);
+    res.status(200).json(buildSuccessResponse({ job }, 'Job updated successfully'));
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json(buildErrorResponse('Job update failed', errorMessage));
+  }
+}
+
+async deleteJob(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    
+    if (!id) {
+      res.status(400).json(buildErrorResponse('Job ID is required'));
+      return;
+    }
+    
+    await this.jobService.deleteJob(id);
+    res.status(200).json(buildSuccessResponse({}, 'Job deleted successfully'));
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json(buildErrorResponse('Job deletion failed', errorMessage));
+  }
+}
 }

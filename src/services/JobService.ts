@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify';
 import { Job, JobApplication } from '@prisma/client';
-import { IJobService } from '../services/IJobService';
+import { IJobService, UpdateJobInput } from '../services/IJobService';
 import { IJobRepository } from '../repositories/IJobRepository';
 import { JobSearchFilters } from '../types/job';
 import TYPES from '../config/types';
@@ -64,5 +64,17 @@ export class JobService implements IJobService {
     const hasApplied = await this.jobRepository.checkUserApplication(jobId, userId);
     console.log('JobService: hasApplied =', hasApplied);
     return hasApplied;
+  }
+
+  async getJobsByCompany(companyId: string): Promise<Job[]> {
+    return this.jobRepository.getJobsByCompany(companyId);
+  }
+
+  async updateJob(id: string, jobData: UpdateJobInput): Promise<Job> {
+    return this.jobRepository.updateJob(id,jobData);
+  }
+
+  async deleteJob(id: string): Promise<void> {
+    return this.jobRepository.deleteJob(id);
   }
 }

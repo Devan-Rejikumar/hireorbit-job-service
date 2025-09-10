@@ -13,6 +13,7 @@ model Job {
   title       String
   description String
   company     String
+  companyId   String?
   location    String
   salary      String?
   jobType     String

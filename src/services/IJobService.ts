@@ -1,5 +1,6 @@
 import { Job, JobApplication } from '@prisma/client';
-import { JobSearchFilters } from '../types/job';
+import { JobSearchFilters, } from '../types/job';
+
 
 interface ApplicationData {
   coverLetter: string;
@@ -9,8 +10,19 @@ interface ApplicationData {
   resumeUrl?: string | null;
 }
 
+export interface UpdateJobInput {
+  title: string;
+  description: string;
+  company: string;
+  location: string;
+  salary?: string;
+  jobType: string;
+  requirements: string[];
+  benefits: string[];
+}
+
+
 export interface IJobService {
- 
   createJob(jobData: Omit<Job, 'id' | 'createdAt' | 'updatedAt'>): Promise<Job>;
   getJobById(jobId: string): Promise<Job | null>;
   getAllJobs(): Promise<Job[]>;
@@ -20,4 +32,8 @@ export interface IJobService {
   getJobSuggestions(query: string, limit?: number): Promise<string[]>;
   getJobCountByCompany(companyId: string): Promise<number>;
   checkUserApplication(jobId: string, userId: string): Promise<boolean>;
+  getJobsByCompany(companyId: string): Promise<Job[]>;
+  updateJob(id:string, jobData: UpdateJobInput):Promise<Job>;
+  deleteJob(id:string):Promise<void>;
+
 }

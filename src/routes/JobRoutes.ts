@@ -39,4 +39,8 @@ router.post('/:id/apply', (req, res) => {
 router.get('/:id/applications', (req, res) => jobController.getJobApplications(req, res));
 router.get('/:id/application-status', (req, res) => jobController.checkApplicationStatus(req, res));
 
+router.get('/company/:companyId', (req, res) => jobController.getJobsByCompany(req, res));
+router.put('/:id', (req, res) => jobController.updateJob(req, res));
+router.delete('/:id', (req, res) => jobController.deleteJob(req, res));
+
 export default router;

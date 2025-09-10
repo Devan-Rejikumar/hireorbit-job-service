@@ -2,6 +2,7 @@ import { injectable } from 'inversify';
 import { Job, JobApplication, PrismaClient } from '@prisma/client';
 import { IJobRepository } from './IJobRepository';
 import { JobSearchFilters } from '../types/job';
+import { UpdateJobInput } from '../services/IJobService';
 
 const prisma = new PrismaClient();
 
@@ -107,10 +108,7 @@ export class JobRepository implements IJobRepository {
     });
   }
 
-  async getJobSuggestions(
-    query: string,
-    limit: number = 10,
-  ): Promise<string[]> {
+  async getJobSuggestions(query: string,limit: number = 10,): Promise<string[]> {
     const jobs = await prisma.job.findMany({
       where: {
         isActive: true,
@@ -147,5 +145,25 @@ export class JobRepository implements IJobRepository {
     const hasApplied = !!application;
     console.log('JobRepository: hasApplied =', hasApplied);
     return hasApplied;
+  }
+  async getJobsByCompany(companyId: string): Promise<Job[]> {
+    return prisma.job.findMany({
+      where: { company: companyId, isActive: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async updateJob(id: string, jobData: UpdateJobInput): Promise<Job> {
+    return prisma.job.update({
+      where: { id },
+      data: jobData,
+    });
+  }
+
+  async deleteJob(id: string): Promise<void> {
+    await prisma.job.update({
+      where: { id },
+      data: { isActive: false },
+    });
   }
 }
